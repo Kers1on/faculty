@@ -1,10 +1,20 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('/data/database.db');
+const path = require('path');
 
-db.serialize(() => {
-  db.run("CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY AUTOINCREMENT, name TEXT, PASSWORD TEXT)");
+const db = new sqlite3.Database(path.join(__dirname, 'data', 'database.db'), (err) => {
+  if (err) {
+    console.error("Помилка підключення до бази даних:", err.message);
+  } else {
+    console.log("Підключено до SQLite бази даних.");
+  }
 });
 
-db.close();
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    name TEXT NOT NULL, 
+    password TEXT NOT NULL
+  )`);
+});
 
-export {db}
+module.exports = db;
