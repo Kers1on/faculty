@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build:client": "cd ../client && npm run build",
-    "start:server": "node index.js",
+    "start:server": "node index.js --watch",
     "dev": "npm run build:client && npm run start:server"
   },
   "author": "",
