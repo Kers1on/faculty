@@ -2,6 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build:client": "cd ../client && npm run build",
     "start:server": "node index.js --watch",
