@@ -9,4 +9,20 @@ export const getTeachers = (req, res) => {
   });
 }
 
-// Add POST requests
+export const addTeacher = (req, res) => {
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "Всі поля є обов’язковими" });
+  }
+
+  const sql = `INSERT INTO teachers (name) VALUES (?)`;
+  const values = [name];
+
+  db.run(sql, values, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ id: this.lastID, name });
+  });
+};

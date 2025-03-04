@@ -1,9 +1,9 @@
 import express from "express";
-import { getFaculty } from "../controllers/FacultyController.js";
+import { getFaculty, addFaculty } from "../controllers/FacultyController.js";
 
 const FacultyRoutes = express.Router();
 
-// Add POST requests
 FacultyRoutes.get("/faculty", getFaculty);
+FacultyRoutes.post("/faculty", addFaculty);
 
 export default FacultyRoutes;
