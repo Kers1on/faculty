@@ -15,6 +15,32 @@ db.serialize(() => {
     name TEXT NOT NULL, 
     password TEXT NOT NULL
   )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS students (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    name TEXT NOT NULL, 
+    student_group TEXT NOT NULL,
+    phone INTEGER NOT NULL,
+    email TEXT NOT NULL,
+    department TEXT NOT NULL
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS teachers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    name TEXT NOT NULL
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS faculty (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    name TEXT NOT NULL, 
+    department TEXT NOT NULL,
+    teacher_id INTEGER NOT NULL,
+    form TEXT NOT NULL,
+    hour INTEGER NOT NULL,
+    language TEXT NOT NULL,
+    labor_hours INTEGER NOT NULL,
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
+  )`);
 });
 
 module.exports = db;
