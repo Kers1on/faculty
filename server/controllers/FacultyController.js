@@ -49,13 +49,13 @@ export const getFacultativeGroup = (req, res) => {
 
     let labColumns = "";
     for (let i = 1; i <= labCount; i++) {
-      labColumns += `lr${i}, `;
+      labColumns += `f.lr${i}, `;
     }
 
     labColumns = labColumns.slice(0, -2);
 
     const selectQuery = `
-      SELECT s.id, s.name, s.student_group, f.final_grade, f.completion_date, ${labColumns}
+      SELECT s.id, s.name, ${labColumns}, f.final_grade, f.completion_date
       FROM students s
       LEFT JOIN ${tableName} f ON s.id = f.student_id
     `;
