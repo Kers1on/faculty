@@ -19,9 +19,19 @@ const Students = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   
-  const handleSave = () => {
-    console.log("Saving student:", formData);
-    handleClose();
+  const handleSave = async () => {
+    try {
+      await fetch("http://localhost:8747/api/students", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      handleClose(); 
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
   return (
