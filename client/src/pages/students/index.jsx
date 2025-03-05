@@ -1,17 +1,32 @@
 import React from "react"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, Button, Modal, Form } from "react-bootstrap";
 import Layout from "../layout/layout";
 
 const Students = () => {
+  const [students, setStudents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
-    group: "",
+    student_group: "",
     department: "",
   });
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  const fetchStudents = async () => {
+    try {
+      const response = await fetch("http://localhost:8747/api/students");
+      const data = await response.json();
+      setStudents(data);
+    } catch (error) {
+      console.error("Помилка отримання студентів:", error);
+    }
+  };
 
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
@@ -29,6 +44,7 @@ const Students = () => {
         body: JSON.stringify(formData),
       });
       handleClose(); 
+      fetchStudents();
     } catch (error) {
       console.error(error.message);
     }
@@ -54,7 +70,18 @@ const Students = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Тут будуть студенти */}
+                  {students.map((student) => (
+                    <tr key={student.id} className="text-center">
+                      <td>{student.name}</td>
+                      <td>{student.phone}</td>
+                      <td>{student.email}</td>
+                      <td>{student.student_group}</td>
+                      <td>{student.department}</td>
+                      <td>
+                        <Button variant="danger" size="sm">Видалити</Button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
               <Button variant="secondary" className="w-100 mt-3" onClick={handleShow}>
@@ -85,7 +112,7 @@ const Students = () => {
               </Form.Group>
               <Form.Group className="mb-2">
                 <Form.Label>Група</Form.Label>
-                <Form.Control type="text" name="group" value={formData.group} onChange={handleChange} placeholder="Введіть групу" />
+                <Form.Control type="text" name="student_group" value={formData.student_group} onChange={handleChange} placeholder="Введіть групу" />
               </Form.Group>
               <Form.Group className="mb-2">
                 <Form.Label>Кафедра</Form.Label>
