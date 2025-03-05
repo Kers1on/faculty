@@ -1,6 +1,6 @@
 import db from "../db.js";
 
-// Faculty
+// ========================================================== Faculty ==========================================================
 export const getFaculty = (req, res) => {
   db.all("SELECT * FROM faculty", [], (err, rows) => {
     if (err) {
@@ -29,7 +29,76 @@ export const addFaculty = (req, res) => {
   });
 };
 
-// Facultative group
+// (NON-TESTED)
+export const updateFaculty = (req, res) => {
+  const { faculty_id, name, department, teacher_id, form, hour, language, labor_hours } = req.body;
+
+  if (!faculty_id || !name || !department || !teacher_id || !form || !hour || !language || !labor_hours) {
+    return res.status(400).json({ error: "Всі поля є обов’язковими" });
+  }
+
+  db.get("SELECT * FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (!faculty) {
+      return res.status(404).json({ error: "Факультатив не знайдено" });
+    }
+
+    const updateQuery = `
+      UPDATE faculty
+      SET name = ?, department = ?, teacher_id = ?, form = ?, hour = ?, language = ?, labor_hours = ?
+      WHERE id = ?
+    `;
+    const values = [name, department, teacher_id, form, hour, language, labor_hours, faculty_id];
+
+    db.run(updateQuery, values, function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: `Факультатив з ID ${faculty_id} успішно оновлений` });
+    });
+  });
+};
+
+// (NON-TESTED) ВИДАЛЯЮТЬСЯ УСІ ТАБЛИЦІ, ПОВʼЯЗАНІ З ЦИМ ФАКУЛЬТАТИВОМ
+export const deleteFaculty = (req, res) => {
+  const { faculty_id } = req.body;
+
+  if (!faculty_id) {
+    return res.status(400).json({ error: "Необхідне поле faculty_id" });
+  }
+
+  db.get("SELECT * FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (!faculty) {
+      return res.status(404).json({ error: "Факультатив не знайдено" });
+    }
+
+    const deleteQuery = "DELETE FROM faculty WHERE id = ?";
+    db.run(deleteQuery, [faculty_id], function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Видалити всі таблиці, які можуть бути пов'язані з факультативом (якщо потрібно)
+      const facultyName = faculty.name.replace(/\s+/g, "_");
+      const dropGroupTableQuery = `DROP TABLE IF EXISTS facultative_${facultyName}`;
+
+      db.run(dropGroupTableQuery, [], (err) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+
+        res.json({ message: `Факультатив з ID ${faculty_id} успішно видалений` });
+      });
+    });
+  });
+};
+
+// ===================================================== Facultative group =====================================================
 // (NON-TESTED)
 export const getFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.query;
