@@ -1,21 +1,13 @@
 import db from "../db.js";
 
-// export const getStudents = (req, res) => {
-//   db.all("SELECT * FROM students", [], (err, rows) => {
-//     if (err) {
-//       return res.status(500).json({ error: err.message });
-//     }
-//     res.json(rows);
-//   });
-// }
-
-export const getStudents = async () => {
-  return new Promise((resolve, reject) => {
-    db.all("SELECT * FROM students", [], (err, rows) => {
-      resolve(rows);
-    });
+export const getStudents = (req, res) => {
+  db.all("SELECT * FROM students", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
   });
-};
+}
 
 export const addStudent = (req, res) => {
   const { name, student_group, phone, email, department } = req.body;
@@ -36,7 +28,6 @@ export const addStudent = (req, res) => {
   });
 };
 
-// (NON-TESTED)
 export const updateStudent = (req, res) => {
   const { id } = req.params;
   const { name, student_group, phone, email, department } = req.body;
@@ -65,7 +56,6 @@ export const updateStudent = (req, res) => {
   });
 };
 
-// (NON-TESTED)
 export const deleteStudent = (req, res) => {
   const { id } = req.params;
 
