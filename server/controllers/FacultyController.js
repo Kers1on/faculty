@@ -30,7 +30,6 @@ export const addFaculty = (req, res) => {
 };
 
 // Facultative group
-
 export const createFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.body;
 
@@ -92,6 +91,60 @@ export const createFacultativeGroup = (req, res) => {
 
         res.status(201).json({ message: `Факультативна група ${tableName} створена` });
       });
+    });
+  });
+};
+
+// Оновлення оцінки в окремій комірці (Excel-type) (NON-TESTED)
+export const updateLabResult = (req, res) => {
+  const { group_name, faculty_id, student_id, lab_name, lab_score } = req.body;
+
+  if (!group_name || !faculty_id || !student_id || !lab_name) {
+    return res.status(400).json({ error: "Обов’язкові поля відсутні" });
+  }
+
+  db.get("SELECT name FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err || !faculty) {
+      return res.status(404).json({ error: "Факультатив не знайдено" });
+    }
+
+    const facultyName = faculty.name.replace(/\s+/g, "_");
+    const tableName = `facultative_${facultyName}_${group_name.replace(/\s+/g, "_")}`;
+
+    const updateQuery = `UPDATE ${tableName} SET ${lab_name} = ? WHERE student_id = ?`;
+
+    db.run(updateQuery, [lab_score, student_id], function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: `Оцінка ${lab_name} оновлена на ${lab_score}` });
+    });
+  });
+};
+
+// (NON-TESTED)
+export const deleteFacultativeGroup = (req, res) => {
+  const { group_name, faculty_id } = req.body;
+
+  if (!group_name || !faculty_id) {
+    return res.status(400).json({ error: "Необхідні дані відсутні" });
+  }
+
+  db.get("SELECT name FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err || !faculty) {
+      return res.status(404).json({ error: "Факультатив не знайдено" });
+    }
+
+    const facultyName = faculty.name.replace(/\s+/g, "_");
+    const tableName = `facultative_${facultyName}_${group_name.replace(/\s+/g, "_")}`;
+
+    const dropTableQuery = `DROP TABLE IF EXISTS ${tableName}`;
+
+    db.run(dropTableQuery, [], (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: `Факультативна група ${tableName} успішно видалена` });
     });
   });
 };
