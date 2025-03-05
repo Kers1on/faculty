@@ -30,6 +30,51 @@ export const addFaculty = (req, res) => {
 };
 
 // Facultative group
+// (NON-TESTED)
+export const getFacultativeGroup = (req, res) => {
+  const { group_name, faculty_id } = req.query;
+
+  if (!group_name || !faculty_id) {
+    return res.status(400).json({ error: "Необхідні дані відсутні" });
+  }
+
+  db.get("SELECT name, labor_hours FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err || !faculty) {
+      return res.status(404).json({ error: "Факультатив не знайдено" });
+    }
+
+    const facultyName = faculty.name.replace(/\s+/g, "_");
+    const tableName = `facultative_${facultyName}_${group_name.replace(/\s+/g, "_")}`;
+    const labCount = faculty.labor_hours;
+
+    let labColumns = "";
+    for (let i = 1; i <= labCount; i++) {
+      labColumns += `lr${i}, `;
+    }
+
+    labColumns = labColumns.slice(0, -2);
+
+    const selectQuery = `
+      SELECT s.id, s.name, s.student_group, f.final_grade, f.completion_date, ${labColumns}
+      FROM students s
+      LEFT JOIN ${tableName} f ON s.id = f.student_id
+    `;
+
+    db.all(selectQuery, [], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      if (rows.length === 0) {
+        return res.status(404).json({ message: "У цій групі немає студентів" });
+      }
+
+      res.json(rows);
+    });
+  });
+};
+
+// (NON-TESTED)
 export const createFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.body;
 
