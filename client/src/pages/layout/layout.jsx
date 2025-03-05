@@ -1,68 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; 
 import { Tooltip, OverlayTrigger } from 'react-bootstrap'; 
-import { FaHome } from "react-icons/fa";
-import { IoIosSpeedometer } from "react-icons/io";
-import { HiOutlineTemplate } from "react-icons/hi";
-import { BsPeopleFill } from "react-icons/bs";
-import { MdAccountCircle } from "react-icons/md";
-import { PiStudentDuotone } from "react-icons/pi";
+import { BsJournalBookmarkFill } from "react-icons/bs";
+import { PiStudentDuotone, PiChalkboardTeacher } from "react-icons/pi";
+import { CiLogout } from "react-icons/ci";
+import { GiBee } from "react-icons/gi";
 
-const Layout = () => {
+const Layout = ({ children }) => {
   return (
     <div className="container-fluid">
       <div className="row">
-        <div className="col-sm-auto bg-light sticky-top">
-          <div className="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-            <Link to="/" className="d-block p-3 link-dark text-decoration-none" title="Icon-only">
-              <PiStudentDuotone className="bi-bootstrap fs-1" />
+        <div className="col-sm-auto sidebar" style={{ backgroundColor: "#2d3034" }}>
+          <div className="d-flex flex-column flex-nowrap align-items-center" style={{ backgroundColor: "#2d3034" }}>
+            <Link to="#" className="d-block p-3 link-light text-decoration-none">
+              <GiBee className="fs-1 text-white" />
             </Link>
-            <ul className="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
+            <ul className="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-3 align-items-center">
               <li className="nav-item">
-                <OverlayTrigger
-                  placement="right"
-                  overlay={<Tooltip id="tooltip-home">Home</Tooltip>}
-                >
-                  <Link to="#" className="nav-link py-3 px-2">
-                    <FaHome className='fs-1'/>
+                <OverlayTrigger placement="right" overlay={<Tooltip id="tooltip-students">Студенти</Tooltip>}>
+                  <Link to="/students" className="nav-link py-3 px-2 text-white">
+                    <PiStudentDuotone className="fs-1 text-white" />
                   </Link>
                 </OverlayTrigger>
               </li>
               <li>
-                <OverlayTrigger
-                  placement="right"
-                  overlay={<Tooltip id="tooltip-dashboard">Dashboard</Tooltip>}
-                >
-                  <Link to="#" className="nav-link py-3 px-2">
-                    <IoIosSpeedometer className='fs-1'/>
+                <OverlayTrigger placement="right" overlay={<Tooltip id="tooltip-facultatives">Факультативи</Tooltip>}>
+                  <Link to="/facultatives" className="nav-link py-3 px-2 text-white">
+                    <BsJournalBookmarkFill className="fs-1 text-white" />
                   </Link>
                 </OverlayTrigger>
               </li>
               <li>
-                <OverlayTrigger
-                  placement="right"
-                  overlay={<Tooltip id="tooltip-orders">Orders</Tooltip>}
-                >
-                  <Link to="#" className="nav-link py-3 px-2">
-                    <HiOutlineTemplate className='fs-1'/>
-                  </Link>
-                </OverlayTrigger>
-              </li>
-              <li>
-                <OverlayTrigger
-                  placement="right"
-                  overlay={<Tooltip id="tooltip-products">Products</Tooltip>}
-                >
-                  <Link to="#" className="nav-link py-3 px-2">
-                    <BsPeopleFill className='fs-1'/>
+                <OverlayTrigger placement="right" overlay={<Tooltip id="tooltip-teachers">Викладачі</Tooltip>}>
+                  <Link to="/teachers" className="nav-link py-3 px-2 text-white">
+                    <PiChalkboardTeacher className="fs-1 text-white" />
                   </Link>
                 </OverlayTrigger>
               </li>
             </ul>
+            <div className="dropdown">
+              <Link to="#" className="d-flex align-items-center justify-content-center p-3 link-light text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
+                <CiLogout className="fs-1 text-white" />
+              </Link>
+              <ul className="dropdown-menu text-small shadow text-white" aria-labelledby="dropdownUser3">
+                <li>
+                  <Link className="dropdown-item text-white" to="#">Log Out</Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-        <div className="col-sm p-3 min-vh-100">
-          {/* content */}
+        <div className="col-sm p-3 min-vh-100 content-area">
+          { children }
         </div>
       </div>
     </div>
