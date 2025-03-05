@@ -66,3 +66,36 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100px;
+  z-index: 1000;
+}
+
+.content-area {
+  margin-left: 100px; /* Зсунути контент праворуч, щоб він не перекривався з боковою панеллю */
+  padding: 20px;
+}
+
+.nav-pills {
+  padding-top: 50px; /* Додатковий відступ для того, щоб не перекривати навігацію */
+}
+
+.nav-link:active i, 
+.nav-link:focus i {
+  color: darkgray !important; /* Темно-сірий при натисканні */
+}
+
+.nav-link i {
+  color: black; /* Черный цвет иконок */
+  transition: color 0.3s ease; /* Плавное изменение цвета */
+}
+
+
+.nav-link:hover i {
+  color: gray; /* Серый цвет при наведении */
+}

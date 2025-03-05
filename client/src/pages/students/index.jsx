@@ -26,7 +26,7 @@ const Students = () => {
 
   return (
     <Layout>
-      <div className="col-sm p-3 min-vh-100 content-area">
+      <div className="col-sm p-3 min-vh-100 content-area" style={{ backgroundColor: "rgb(231, 238, 247)" }}>
         <h2 className="text-center w-100 bg">Студенти</h2>
         <hr />
         <div className="container-fluid">
@@ -34,7 +34,7 @@ const Students = () => {
             <div id="studentsPage" className="page">
               <Table striped bordered hover size="sm">
                 <thead className="table-dark">
-                  <tr>
+                  <tr className="text-center">
                     <th>ПІБ</th>
                     <th>Телефон</th>
                     <th>Ел.пошта</th>

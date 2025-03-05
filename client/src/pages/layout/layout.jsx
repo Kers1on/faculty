@@ -8,7 +8,7 @@ import { GiBee } from "react-icons/gi";
 
 const Layout = ({ children }) => {
   return (
-    <div className="container-fluid">
+    <div className="sidebar container-fluid">
       <div className="row">
         <div className="col-sm-auto sidebar" style={{ backgroundColor: "#2d3034" }}>
           <div className="d-flex flex-column flex-nowrap align-items-center" style={{ backgroundColor: "#2d3034" }}>
@@ -50,7 +50,7 @@ const Layout = ({ children }) => {
             </div>
           </div>
         </div>
-        <div className="col-sm p-3 min-vh-100 content-area">
+        <div>
           { children }
         </div>
       </div>
