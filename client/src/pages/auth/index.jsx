@@ -1,85 +1,103 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState("login");
+  const [formData, setFormData] = useState({ name: "", password: "", confirmPassword: "" });
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleTabSwitch = (tab) => {
     setActiveTab(tab);
+    setErrorMessage("");
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+
+    const endpoint = activeTab === "login" ? "/api/auth/login" : "/api/auth/register";
+    const requestData =
+      activeTab === "login"
+        ? { name: formData.name, password: formData.password }
+        : { name: formData.name, password: formData.password, confirmPassword: formData.confirmPassword };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Помилка сервера");
+      }
+
+      localStorage.setItem("token", data.token);
+      navigate("/faculty");
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
   };
 
   return (
     <div className="container bg-light p-5 rounded shadow">
-      {/* Вкладки для перемикання між авторизацією та реєстрацією */}
-      <ul className="nav nav-tabs" id="authTab" role="tablist">
+      <ul className="nav nav-tabs">
         <li className="nav-item">
-          <a
-            className={`nav-link ${activeTab === "login" ? "active text-secondary" : "text-secondary"}`}
-            onClick={() => handleTabSwitch("login")}
-            role="tab"
-            aria-controls="login"
-            aria-selected={activeTab === "login"}
-          >
+          <button className={`nav-link ${activeTab === "login" ? "active text-secondary" : "text-secondary"}`} onClick={() => handleTabSwitch("login")}>
             Авторизація
-          </a>
+          </button>
         </li>
         <li className="nav-item">
-          <a
-            className={`nav-link ${activeTab === "register" ? "active text-secondary" : "text-secondary"}`}
-            onClick={() => handleTabSwitch("register")}
-            role="tab"
-            aria-controls="register"
-            aria-selected={activeTab === "register"}
-          >
+          <button className={`nav-link ${activeTab === "register" ? "active text-secondary" : "text-secondary"}`} onClick={() => handleTabSwitch("register")}>
             Реєстрація
-          </a>
+          </button>
         </li>
       </ul>
 
-      {/* Вміст вкладок */}
-      <div className="tab-content form-container" id="authTabContent">
-        {/* Авторизація */}
-        <div className={`tab-pane fade ${activeTab === "login" ? "show active" : ""}`} id="login" role="tabpanel" aria-labelledby="login-tab">
-          <h2 className="text-center mb-4 mt-2">Авторизація</h2>
-          <form>
-            <div className="form-group">
-              <label htmlFor="login">Логін</label>
-              <input type="text" className="form-control" id="login" name="login" required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Пароль</label>
-              <input type="password" className="form-control" id="password" name="password" required />
-            </div>
-            <div className="d-flex justify-content-center">
-              <button type="submit" className="btn btn-secondary mt-3 w-100">
-                Увійти
-              </button>
-            </div>
-          </form>
-        </div>
+      {errorMessage && <div className="alert alert-danger mt-3">{errorMessage}</div>}
 
-        {/* Реєстрація */}
-        <div className={`tab-pane fade ${activeTab === "register" ? "show active" : ""}`} id="register" role="tabpanel" aria-labelledby="register-tab">
-          <h2 className="text-center mb-4 mt-2">Реєстрація</h2>
-          <form>
-            <div className="form-group">
-              <label htmlFor="reg-login">Логін</label>
-              <input type="text" className="form-control" id="reg-login" name="login" required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="reg-password">Пароль</label>
-              <input type="password" className="form-control" id="reg-password" name="password" required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="reg-confirm-password">Підтвердження паролю</label>
-              <input type="password" className="form-control" id="reg-confirm-password" name="confirm-password" required />
-            </div>
-            <div className="d-flex justify-content-center">
-              <button type="submit" className="btn btn-secondary mt-3 w-100">
-                Зареєструватися
-              </button>
-            </div>
-          </form>
-        </div>
+      <div className="tab-content form-container">
+        {activeTab === "login" ? (
+          <div className="tab-pane fade show active">
+            <h2 className="text-center mb-4 mt-2">Авторизація</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Логін</label>
+                <input type="text" className="form-control" id="name" name="name" value={formData.name} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Пароль</label>
+                <input type="password" className="form-control" id="password" name="password" value={formData.password} onChange={handleChange} required />
+              </div>
+              <button type="submit" className="btn btn-secondary mt-3 w-100">Увійти</button>
+            </form>
+          </div>
+        ) : (
+          <div className="tab-pane fade show active">
+            <h2 className="text-center mb-4 mt-2">Реєстрація</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Логін</label>
+                <input type="text" className="form-control" id="name" name="name" value={formData.name} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Пароль</label>
+                <input type="password" className="form-control" id="password" name="password" value={formData.password} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Підтвердження паролю</label>
+                <input type="password" className="form-control" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
+              </div>
+              <button type="submit" className="btn btn-secondary mt-3 w-100">Зареєструватися</button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
