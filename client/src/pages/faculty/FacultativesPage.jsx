@@ -29,12 +29,34 @@ const FacultativesPage = () => {
     }
   };
 
+  const deleteFaculty = async (facultyId) => {
+    try {
+      const response = await fetch(`http://localhost:8747/api/faculty/${facultyId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ faculty_id: facultyId }),
+      });
+
+      if (response.ok) {
+        setFacultatives(facultatives.filter(fac => fac.id !== facultyId));
+      } 
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <Layout>
       <div className="col-sm p-3 min-vh-100 content-area" style={{ backgroundColor: "rgb(231, 238, 247)" }}>
-        <h1 className="text-xl font-bold">Факультативи</h1>
+        <h1 className="text-xl font-bold text-center">Факультативи</h1>
         {facultatives.map((facultative) => (
-          <FacultativeCard key={facultative.id} facultative={facultative} />
+          <FacultativeCard             
+            key={facultative.id}
+            facultative={facultative}
+            deleteFaculty={deleteFaculty}
+            fetchFaculty={fetchFaculty} />
         ))}
         <button type="button" className="btn btn-outline-secondary w-100 mt-3" onClick={handleOpenModal}>
           + Додати новий факультатив

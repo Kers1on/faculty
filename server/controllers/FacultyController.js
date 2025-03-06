@@ -45,7 +45,8 @@ export const addFaculty = (req, res) => {
 
 // (NON-TESTED)
 export const updateFaculty = (req, res) => {
-  const { faculty_id, name, department, teacher_id, form, hour, language, labor_hours } = req.body;
+  const { name, department, teacher_id, form, hour, language, labor_hours } = req.body;
+  const faculty_id = req.params.id;  // Используем id из параметров URL
 
   if (!faculty_id || !name || !department || !teacher_id || !form || !hour || !language || !labor_hours) {
     return res.status(400).json({ error: "Всі поля є обов’язковими" });
@@ -74,6 +75,7 @@ export const updateFaculty = (req, res) => {
     });
   });
 };
+
 
 // (NON-TESTED) ВИДАЛЯЮТЬСЯ УСІ ТАБЛИЦІ, ПОВʼЯЗАНІ З ЦИМ ФАКУЛЬТАТИВОМ
 export const deleteFaculty = (req, res) => {

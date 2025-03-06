@@ -1,10 +1,15 @@
 import React, { useState, memo } from "react";
 import FacultativeGroup from "./FacultativeGroup";
+import AddFacultyModal from "./AddFacultyModal"; 
 
-const FacultativeCard = memo(({ facultative }) => {
+const FacultativeCard = memo(({ facultative, deleteFaculty, fetchFaculty }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const toggleModule = () => setIsOpen(!isOpen);
+  const handleDelete = async () => await deleteFaculty(facultative.id);
+  const openEditModal = () => setIsEditModalOpen(true);
+  const closeEditModal = () => setIsEditModalOpen(false);
 
   return (
     <div className="facultative-cards">
@@ -14,8 +19,8 @@ const FacultativeCard = memo(({ facultative }) => {
             {`${facultative.name} | ${facultative.department} | ${facultative.teacher_name} | ${facultative.form} | ${facultative.language} | ${facultative.hour} год. | ЛР: ${facultative.labor_hours}`}
           </span>
           <div className="btn-group">
-            <button className="btn btn-secondary bg-opacity-50 border-0">Редагувати</button>
-            <button className="btn btn-secondary bg-opacity-50 border-0">Видалити</button>
+            <button className="btn btn-secondary bg-opacity-50 border-0" onClick={openEditModal}>Редагувати</button>
+            <button className="btn btn-secondary bg-opacity-50 border-0" onClick={handleDelete}>Видалити</button>
             <button className="btn btn-secondary bg-opacity-50 border-0" onClick={toggleModule}>
               {isOpen ? "∧" : "∨"}
             </button>
@@ -27,6 +32,13 @@ const FacultativeCard = memo(({ facultative }) => {
           </div>
         )}
       </div>
+
+      <AddFacultyModal 
+        show={isEditModalOpen} 
+        onClose={closeEditModal} 
+        fetchFaculty={fetchFaculty} 
+        initialData={facultative}
+      />
     </div>
   );
 });
