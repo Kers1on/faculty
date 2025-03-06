@@ -77,6 +77,15 @@ button:focus-visible {
 }
 
 .content-area {
+  margin-left: 100px; 
+}
+
+.nav-pills {
+  padding-top: 50px;
+}
+
+
+.content-area {
   margin-left: 100px; /* Зсунути контент праворуч, щоб він не перекривався з боковою панеллю */
   padding: 20px;
 }
