@@ -3,9 +3,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 export const register = (req, res) => {
-  const { name, password } = req.body;
-  if (!name || !password) {
+  const { name, password, confirmPassword } = req.body;
+
+  if (!name || !password || !confirmPassword) {
     return res.status(400).json({ message: "Всі поля обов'язкові" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Паролі не співпадають" });
   }
 
   db.get("SELECT * FROM users WHERE name = ?", [name], async (err, user) => {
