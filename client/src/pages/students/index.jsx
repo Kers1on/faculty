@@ -8,6 +8,7 @@ import { MdDeleteForever } from "react-icons/md";
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -17,6 +18,7 @@ const Students = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     fetchStudents();
@@ -91,25 +93,26 @@ const Students = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Ви справді хочете видалити цього студента?")) {
-      try {
-        const response = await fetch(`http://localhost:8747/api/students/${id}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
-        if (response.ok) {
-          fetchStudents();
-        } else {
-          console.error("Помилка при видаленні студента");
-        }
-      } catch (error) {
-        console.error("Помилка видалення студента:", error);
+  const handleShowDeleteModal = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`http://localhost:8747/api/students/${deleteId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (response.ok) {
+        fetchStudents();
+      } else {
+        console.error("Помилка при видаленні студента");
       }
+    } catch (error) {
+      console.error("Помилка видалення студента:", error);
     }
+    setShowDeleteModal(false);
   };
 
   return (
@@ -151,7 +154,7 @@ const Students = () => {
                         <Button 
                           variant="secondary" 
                           size="sm" 
-                          onClick={() => handleDelete(student.id)}
+                          onClick={() => handleShowDeleteModal(student.id)}
                         >
                           <MdDeleteForever />
                         </Button>
@@ -231,6 +234,18 @@ const Students = () => {
               {isEditing ? "Зберегти зміни" : "Зберегти"}
             </Button>
             <Button variant="secondary" onClick={handleClose}>Закрити</Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Модальне вікно підтвердження видалення */}
+        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Підтвердження видалення</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Ви справді хочете видалити цього студента?</Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={handleDelete}>Видалити</Button>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Скасувати</Button>
           </Modal.Footer>
         </Modal>
       </div>

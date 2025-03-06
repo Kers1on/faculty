@@ -63,3 +63,5 @@ build
 dist
 .env
 deploy
+
+data/database.db
