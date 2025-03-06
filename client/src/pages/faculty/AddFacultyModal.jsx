@@ -53,7 +53,7 @@ const AddSubjectModal = ({ show, onClose }) => {
   return (
     <div className="modal fade show" style={{ display: "block" }} id="addSubjectModal" tabIndex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
       <div className="modal-dialog">
-        <div className="modal-content">
+        <div className="modal-content"> 
           <div className="modal-header">
             <h5 className="modal-title" id="addSubjectModalLabel">Додати новий факультатив</h5>
             <button type="button" className="btn-close" onClick={onClose} aria-label="Close"></button>
