@@ -64,4 +64,4 @@ dist
 .env
 deploy
 
-data/database.db
+data

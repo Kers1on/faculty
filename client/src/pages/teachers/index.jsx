@@ -91,7 +91,7 @@ const Teachers = () => {
 
   return (
     <Layout>
-      <div className="col-sm p-3 min-vh-100 content-area" style={{ backgroundColor: "rgb(231, 238, 247)" }}>
+      <div className="col-sm p-3 min-vh-100 content-area">
         <h2 className="text-center w-100 bg">Викладачі</h2>
         <hr />
         <Table striped bordered hover size="sm">
