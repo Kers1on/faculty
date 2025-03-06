@@ -25,7 +25,7 @@ const Layout = ({ children }) => {
               </li>
               <li>
                 <OverlayTrigger placement="right" overlay={<Tooltip id="tooltip-facultatives">Факультативи</Tooltip>}>
-                  <Link to="/facultatives" className="nav-link py-3 px-2 text-white">
+                  <Link to="/faculty" className="nav-link py-3 px-2 text-white">
                     <BsJournalBookmarkFill className="fs-1 text-white" />
                   </Link>
                 </OverlayTrigger>
