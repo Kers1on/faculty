@@ -19,9 +19,9 @@ const Layout = ({ children }) => {
       <div className="row">
         <div className="col-sm-auto sidebar" style={{ backgroundColor: "#2d3034" }}>
           <div className="d-flex flex-column flex-nowrap align-items-center" style={{ backgroundColor: "#2d3034" }}>
-            <Link to="#" className="d-block p-3 link-light text-decoration-none">
+            <div to="#" className="d-block p-3 link-light text-decoration-none">
               <GiBee className="fs-1 text-white" />
-            </Link>
+            </div>
             <ul className="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-3 align-items-center">
               <li className="nav-item">
                 <OverlayTrigger placement="right" overlay={<Tooltip id="tooltip-students">Студенти</Tooltip>}>
