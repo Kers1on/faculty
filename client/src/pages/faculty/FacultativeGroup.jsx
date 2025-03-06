@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-const FacultativeGroup = ({ group }) => {
-  const [students, setStudents] = useState([]);
+const FacultativeGroup = () => {
+  // const [students, setStudents] = useState([]);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    if (expanded) {
-      fetch(`http://localhost:8747/api/faculty/group/${group.group_name}`)
-        .then((res) => res.json())
-        .then((data) => setStudents(data))
-        .catch((err) => console.error("Помилка завантаження студентів:", err));
-    }
-  }, [expanded]);
+  // useEffect(() => {
+  //   if (expanded) {
+  //     fetch(`http://localhost:8747/api/faculty/group/${group.group_name}`)
+  //       .then((res) => res.json())
+  //       .then((data) => setStudents(data))
+  //   }
+  // }, [expanded, group.group_name]);
 
   return (
     <div className="border p-2 m-2">
       <div className="flex justify-between">
-        <h3>{group.group_name}</h3>
+        {/* <h3>{group.group_name}</h3> */}
         <button onClick={() => setExpanded(!expanded)}> {expanded ? "🔽" : "▶️"} </button>
       </div>
 
@@ -33,7 +32,7 @@ const FacultativeGroup = ({ group }) => {
               <th>Дата закінчення</th>
             </tr>
           </thead>
-          <tbody>
+          {/* <tbody>
             {students.map((student) => (
               <tr key={student.id}>
                 <td>{student.name}</td>
@@ -45,7 +44,7 @@ const FacultativeGroup = ({ group }) => {
                 <td><input type="date" defaultValue={student.completion_date || ""} /></td>
               </tr>
             ))}
-          </tbody>
+          </tbody> */}
         </table>
       )}
     </div>
