@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FacultativeCard from "./FacultativeCard";
 import Layout from "../layout/layout";
-import AddSubjectModal from "./AddFacultyModal";
+import AddFacultyModal from "./AddFacultyModal";
 
 const FacultativesPage = () => {
   const [facultatives, setFacultatives] = useState([]);
@@ -11,14 +11,27 @@ const FacultativesPage = () => {
   const handleCloseModal = () => setShowModal(false);
 
   useEffect(() => {
-    fetch("http://localhost:8747/api/faculty")
-      .then((res) => res.json())
-      .then((data) => setFacultatives(data));
+    fetchFaculty();
   }, []);
+
+  const fetchFaculty = async () => {
+    try {
+      const response = await fetch("http://localhost:8747/api/faculty", {
+        method: "GET", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setFacultatives(data);
+    } catch (error) {
+      console.error("Помилка отримання факультативів:", error);
+    }
+  };
 
   return (
     <Layout>
-      <div className="col-sm p-3 min-vh-100 content-area">
+      <div className="col-sm p-3 min-vh-100 content-area" style={{ backgroundColor: "rgb(231, 238, 247)" }}>
         <h1 className="text-xl font-bold">Факультативи</h1>
         {facultatives.map((facultative) => (
           <FacultativeCard key={facultative.id} facultative={facultative} />
@@ -27,7 +40,7 @@ const FacultativesPage = () => {
           + Додати новий факультатив
         </button>
       </div>
-      <AddSubjectModal show={showModal} onClose={handleCloseModal} />
+      <AddFacultyModal show={showModal} onClose={handleCloseModal} fetchFaculty={fetchFaculty} />
     </Layout>
   );
 };

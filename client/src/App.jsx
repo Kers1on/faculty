@@ -5,7 +5,7 @@ import Login from './pages/login'
 import Signup from './pages/signup'
 import Students from './pages/students'
 import Teachers from './pages/teachers'
-import Faculty from './pages/faculty'
+import Faculty from './pages/faculty/FacultativesPage'
 import Layout from './pages/layout/layout';
 
 function App() {

@@ -2,13 +2,27 @@ import db from "../db.js";
 
 // ========================================================== Faculty ==========================================================
 export const getFaculty = (req, res) => {
-  db.all("SELECT * FROM faculty", [], (err, rows) => {
+  const sql = `
+    SELECT 
+      faculty.id, 
+      faculty.name, 
+      faculty.department, 
+      teachers.name AS teacher_name,
+      faculty.form, 
+      faculty.hour, 
+      faculty.language, 
+      faculty.labor_hours
+    FROM faculty
+    LEFT JOIN teachers ON faculty.teacher_id = teachers.id
+  `;
+
+  db.all(sql, [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     res.json(rows);
   });
-}
+};
 
 export const addFaculty = (req, res) => {
   const { name, department, teacher_id, form, hour, language, labor_hours } = req.body;
