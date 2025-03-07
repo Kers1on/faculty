@@ -116,6 +116,49 @@ export const deleteFaculty = (req, res) => {
 
 // ===================================================== Facultative group =====================================================
 // (NON-TESTED)
+// export const getFacultativeGroup = (req, res) => {
+//   const { group_name, faculty_id } = req.query;
+
+//   if (!group_name || !faculty_id) {
+//     return res.status(400).json({ error: "Необхідні дані відсутні" });
+//   }
+
+//   db.get("SELECT name, labor_hours FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+//     if (err || !faculty) {
+//       return res.status(404).json({ error: "Факультатив не знайдено" });
+//     }
+
+//     const facultyName = faculty.name.replace(/\s+/g, "_");
+//     const tableName = `facultative_${facultyName}_${group_name.replace(/\s+/g, "_")}`;
+//     const labCount = faculty.labor_hours;
+
+//     let labColumns = "";
+//     for (let i = 1; i <= labCount; i++) {
+//       labColumns += `f.lr${i}, `;
+//     }
+
+//     labColumns = labColumns.slice(0, -2);
+
+//     const selectQuery = `
+//       SELECT s.id, s.name, ${labColumns}, f.final_grade, f.completion_date, s.student_group
+//       FROM students s
+//       LEFT JOIN ${tableName} f ON s.id = f.student_id
+//     `;
+
+//     db.all(selectQuery, [], (err, rows) => {
+//       if (err) {
+//         return res.status(500).json({ error: err.message });
+//       }
+
+//       if (rows.length === 0) {
+//         return res.status(404).json({ message: "У цій групі немає студентів" });
+//       }
+
+//       res.json(rows);
+//     });
+//   });
+// };
+
 export const getFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.query;
 
@@ -123,43 +166,50 @@ export const getFacultativeGroup = (req, res) => {
     return res.status(400).json({ error: "Необхідні дані відсутні" });
   }
 
-  db.get("SELECT name, labor_hours FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
-    if (err || !faculty) {
-      return res.status(404).json({ error: "Факультатив не знайдено" });
-    }
-
-    const facultyName = faculty.name.replace(/\s+/g, "_");
-    const tableName = `facultative_${facultyName}_${group_name.replace(/\s+/g, "_")}`;
-    const labCount = faculty.labor_hours;
-
-    let labColumns = "";
-    for (let i = 1; i <= labCount; i++) {
-      labColumns += `f.lr${i}, `;
-    }
-
-    labColumns = labColumns.slice(0, -2);
-
-    const selectQuery = `
-      SELECT s.id, s.name, ${labColumns}, f.final_grade, f.completion_date, s.students_group
-      FROM students s
-      LEFT JOIN ${tableName} f ON s.id = f.student_id
-    `;
-
-    db.all(selectQuery, [], (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
+  db.get(
+    "SELECT name, labor_hours FROM faculty WHERE id = ?",
+    [faculty_id],
+    (err, faculty) => {
+      if (err || !faculty) {
+        return res.status(404).json({ error: "Факультатив не знайдено" });
       }
 
-      if (rows.length === 0) {
-        return res.status(404).json({ message: "У цій групі немає студентів" });
-      }
+      const facultyName = faculty.name.replace(/\s+/g, "_");
+      const tableName = `facultative_${facultyName}_${group_name.replace(
+        /\s+/g,
+        "_"
+      )}`;
+      const labCount = faculty.labor_hours;
 
-      res.json(rows);
-    });
-  });
+      let labColumns = "";
+      for (let i = 1; i <= labCount; i++) {
+        labColumns += `f.lr${i}, `;
+      }
+      labColumns = labColumns.slice(0, -2);
+
+      const selectQuery = `
+        SELECT s.id, s.name, ${labColumns}, f.final_grade, f.completion_date, s.student_group
+        FROM students s
+        LEFT JOIN ${tableName} f ON s.id = f.student_id
+        WHERE s.student_group = ?
+      `;
+
+      db.all(selectQuery, [group_name], (err, rows) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+
+        if (rows.length === 0) {
+          return res.status(404).json({ message: "У цій групі немає студентів" });
+        }
+
+        res.json(rows);
+      });
+    }
+  );
 };
 
-// (NON-TESTED)
+
 export const createFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.body;
 
@@ -210,16 +260,26 @@ export const createFacultativeGroup = (req, res) => {
           return res.status(404).json({ message: "У цій групі немає студентів" });
         }
 
-        const insertQuery = `INSERT INTO ${tableName} (student_id, faculty_id) VALUES (?, ?)`;
-        const stmt = db.prepare(insertQuery);
+        db.all(`SELECT student_id FROM ${tableName}`, [], (err, existingRecords) => {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
 
-        students.forEach(({ id }) => {
-          stmt.run(id, faculty_id);
+          const existingStudentIds = existingRecords.map((record) => record.student_id);
+
+          const insertQuery = `INSERT INTO ${tableName} (student_id, faculty_id) VALUES (?, ?)`;
+          const stmt = db.prepare(insertQuery);
+
+          students.forEach(({ id }) => {
+            if (!existingStudentIds.includes(id)) {
+              stmt.run(id, faculty_id);
+            }
+          });
+
+          stmt.finalize();
+
+          res.status(201).json({ message: `Факультативна група ${tableName} створена` });
         });
-
-        stmt.finalize();
-
-        res.status(201).json({ message: `Факультативна група ${tableName} створена` });
       });
     });
   });

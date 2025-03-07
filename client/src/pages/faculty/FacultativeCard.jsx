@@ -2,7 +2,7 @@ import React, { useState, memo } from "react";
 import FacultativeGroup from "./FacultativeGroup";
 import AddFacultyModal from "./AddFacultyModal"; 
 
-const FacultativeCard = memo(({ facultative, deleteFaculty, fetchFaculty }) => {
+const FacultativeCard = memo(({ facultative, deleteFaculty, fetchFaculty, }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -28,7 +28,7 @@ const FacultativeCard = memo(({ facultative, deleteFaculty, fetchFaculty }) => {
         </div>
         {isOpen && (
           <div className="card-body">
-            <FacultativeGroup />
+            <FacultativeGroup facultative={facultative}/>
           </div>
         )}
       </div>
