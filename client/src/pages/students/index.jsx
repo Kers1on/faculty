@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form } from "react-bootstrap";
 import Layout from "../layout/layout";
 import { FaEdit } from "react-icons/fa";
@@ -19,6 +18,7 @@ const Students = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     fetchStudents();
@@ -49,6 +49,7 @@ const Students = () => {
       student_group: "",
       department: "",
     });
+    setFormErrors({});
   };
 
   const handleShow = (student = null) => {
@@ -72,7 +73,40 @@ const Students = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    const { name, phone, email, student_group, department } = formData;
+    let errors = {};
+    
+    if (!name) errors.name = "Поле ПІБ є обов'язковим";
+    if (!phone) errors.phone = "Поле Телефон є обов'язковим";
+    if (!email) errors.email = "Поле Ел.пошта є обов'язковим";
+    if (!student_group) errors.student_group = "Поле Група є обов'язковим";
+    if (!department) errors.department = "Поле Кафедра є обов'язковим";
+
+    const phoneRegex = /^[0-9]+$/;
+    if (phone && !phoneRegex.test(phone)) {
+      errors.phone = "Телефон має містити тільки цифри";
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (email && !emailRegex.test(email)) {
+      errors.email = "Будь ласка, введіть коректну електронну пошту";
+    }
+
+    const groupRegex = /^[0-9_]+$/;
+    if (student_group && !groupRegex.test(student_group)) {
+      errors.student_group = "Група може містити лише цифри та символ нижнього підкреслення (_)";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     const method = isEditing ? "PUT" : "POST";
     const url = isEditing
       ? `http://localhost:8747/api/students/${editingId}`
@@ -177,7 +211,7 @@ const Students = () => {
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <Form.Group className="mb-2">
+              <Form.Group className={`mb-2 ${formErrors.name ? 'has-error' : ''}`}>
                 <Form.Label>ПІБ</Form.Label>
                 <Form.Control 
                   type="text" 
@@ -185,9 +219,11 @@ const Students = () => {
                   value={formData.name} 
                   onChange={handleChange} 
                   placeholder="Введіть ПІБ" 
+                  isInvalid={formErrors.name}
                 />
+                {formErrors.name && <Form.Text className="text-danger">{formErrors.name}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-2">
+              <Form.Group className={`mb-2 ${formErrors.phone ? 'has-error' : ''}`}>
                 <Form.Label>Телефон</Form.Label>
                 <Form.Control 
                   type="text" 
@@ -195,9 +231,11 @@ const Students = () => {
                   value={formData.phone} 
                   onChange={handleChange} 
                   placeholder="Введіть телефон" 
+                  isInvalid={formErrors.phone}
                 />
+                {formErrors.phone && <Form.Text className="text-danger">{formErrors.phone}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-2">
+              <Form.Group className={`mb-2 ${formErrors.email ? 'has-error' : ''}`}>
                 <Form.Label>Ел.пошта</Form.Label>
                 <Form.Control 
                   type="email" 
@@ -205,9 +243,11 @@ const Students = () => {
                   value={formData.email} 
                   onChange={handleChange} 
                   placeholder="Введіть email" 
+                  isInvalid={formErrors.email}
                 />
+                {formErrors.email && <Form.Text className="text-danger">{formErrors.email}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-2">
+              <Form.Group className={`mb-2 ${formErrors.student_group ? 'has-error' : ''}`}>
                 <Form.Label>Група</Form.Label>
                 <Form.Control 
                   type="text" 
@@ -215,9 +255,11 @@ const Students = () => {
                   value={formData.student_group} 
                   onChange={handleChange} 
                   placeholder="Введіть групу" 
+                  isInvalid={formErrors.student_group}
                 />
+                {formErrors.student_group && <Form.Text className="text-danger">{formErrors.student_group}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-2">
+              <Form.Group className={`mb-2 ${formErrors.department ? 'has-error' : ''}`}>
                 <Form.Label>Кафедра</Form.Label>
                 <Form.Control 
                   type="text" 
@@ -225,7 +267,9 @@ const Students = () => {
                   value={formData.department} 
                   onChange={handleChange} 
                   placeholder="Введіть кафедру" 
+                  isInvalid={formErrors.department}
                 />
+                {formErrors.department && <Form.Text className="text-danger">{formErrors.department}</Form.Text>}
               </Form.Group>
             </Form>
           </Modal.Body>
