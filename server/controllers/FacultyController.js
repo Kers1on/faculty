@@ -38,15 +38,13 @@ export const addFaculty = (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    // Прибрати, коли буде готовий фронт
     res.json({ id: this.lastID, name, department, teacher_id, form, hour, language, labor_hours });
   });
 };
 
-// (NON-TESTED)
 export const updateFaculty = (req, res) => {
   const { name, department, teacher_id, form, hour, language, labor_hours } = req.body;
-  const faculty_id = req.params.id;  // Используем id из параметров URL
+  const faculty_id = req.params.id;
 
   if (!faculty_id || !name || !department || !teacher_id || !form || !hour || !language || !labor_hours) {
     return res.status(400).json({ error: "Всі поля є обов’язковими" });
@@ -76,8 +74,7 @@ export const updateFaculty = (req, res) => {
   });
 };
 
-
-// (NON-TESTED) ВИДАЛЯЮТЬСЯ УСІ ТАБЛИЦІ, ПОВʼЯЗАНІ З ЦИМ ФАКУЛЬТАТИВОМ
+// ВИДАЛЯЮТЬСЯ УСІ ТАБЛИЦІ, ПОВʼЯЗАНІ З ЦИМ ФАКУЛЬТАТИВОМ
 export const deleteFaculty = (req, res) => {
   const { faculty_id } = req.body;
 
@@ -93,72 +90,38 @@ export const deleteFaculty = (req, res) => {
       return res.status(404).json({ error: "Факультатив не знайдено" });
     }
 
-    const deleteQuery = "DELETE FROM faculty WHERE id = ?";
-    db.run(deleteQuery, [faculty_id], function (err) {
+    const facultyName = faculty.name.replace(/\s+/g, "_");
+    const tablePrefix = `facultative_${facultyName}_`;
+
+    const getTablesQuery = `SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE ?`;
+
+    db.all(getTablesQuery, [`${tablePrefix}%`], (err, rows) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
 
-      // Видалити всі таблиці, які можуть бути пов'язані з факультативом (якщо потрібно)
-      const facultyName = faculty.name.replace(/\s+/g, "_");
-      const dropGroupTableQuery = `DROP TABLE IF EXISTS facultative_${facultyName}`;
+      rows.forEach((row) => {
+        const dropTableQuery = `DROP TABLE IF EXISTS ${row.name}`;
+        db.run(dropTableQuery, [], (err) => {
+          if (err) {
+            return res.status(500).json({ error: `Не вдалося видалити таблицю ${row.name}: ${err.message}` });
+          }
+        });
+      });
 
-      db.run(dropGroupTableQuery, [], (err) => {
+      const deleteQuery = "DELETE FROM faculty WHERE id = ?";
+      db.run(deleteQuery, [faculty_id], function (err) {
         if (err) {
           return res.status(500).json({ error: err.message });
         }
 
-        res.json({ message: `Факультатив з ID ${faculty_id} успішно видалений` });
+        res.json({ message: `Факультатив з ID ${faculty_id} успішно видалений і всі його таблиці були видалені` });
       });
     });
   });
 };
 
 // ===================================================== Facultative group =====================================================
-// (NON-TESTED)
-// export const getFacultativeGroup = (req, res) => {
-//   const { group_name, faculty_id } = req.query;
-
-//   if (!group_name || !faculty_id) {
-//     return res.status(400).json({ error: "Необхідні дані відсутні" });
-//   }
-
-//   db.get("SELECT name, labor_hours FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
-//     if (err || !faculty) {
-//       return res.status(404).json({ error: "Факультатив не знайдено" });
-//     }
-
-//     const facultyName = faculty.name.replace(/\s+/g, "_");
-//     const tableName = `facultative_${facultyName}_${group_name.replace(/\s+/g, "_")}`;
-//     const labCount = faculty.labor_hours;
-
-//     let labColumns = "";
-//     for (let i = 1; i <= labCount; i++) {
-//       labColumns += `f.lr${i}, `;
-//     }
-
-//     labColumns = labColumns.slice(0, -2);
-
-//     const selectQuery = `
-//       SELECT s.id, s.name, ${labColumns}, f.final_grade, f.completion_date, s.student_group
-//       FROM students s
-//       LEFT JOIN ${tableName} f ON s.id = f.student_id
-//     `;
-
-//     db.all(selectQuery, [], (err, rows) => {
-//       if (err) {
-//         return res.status(500).json({ error: err.message });
-//       }
-
-//       if (rows.length === 0) {
-//         return res.status(404).json({ message: "У цій групі немає студентів" });
-//       }
-
-//       res.json(rows);
-//     });
-//   });
-// };
-
 export const getFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.query;
 
@@ -285,7 +248,7 @@ export const createFacultativeGroup = (req, res) => {
   });
 };
 
-// Оновлення оцінки в окремій комірці (Excel-type) (NON-TESTED)
+// Оновлення оцінки в окремій комірці (Excel-type)
 export const updateLabResult = (req, res) => {
   const { group_name, faculty_id, student_id, lab_name, lab_score } = req.body;
 
@@ -312,7 +275,6 @@ export const updateLabResult = (req, res) => {
   });
 };
 
-// (NON-TESTED)
 export const deleteFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.body;
 

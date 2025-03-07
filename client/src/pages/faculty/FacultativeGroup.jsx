@@ -7,41 +7,41 @@ const FacultativeCard = ({ facultative }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("");
 
-  const handleAddFacultativeGroup = (group) => {
+  const handleAddFacultativeGroup = async (group) => {
     if (!group) {
       alert("Будь ласка, виберіть групу.");
       return;
     }
-  
-    fetch("http://localhost:8747/api/faculty/group", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        group_name: group,
-        faculty_id: facultative.id,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Помилка додавання групи: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setFacultyData((prevData) => ({
-          ...prevData,
-          [group]: [...(prevData[group] || []), ...(Array.isArray(data) ? data : [])],
-        }));
-      })
-      .catch((err) => {
-        console.error("Помилка при додаванні групи:", err);
-        alert("Не вдалося додати групу. Спробуйте ще раз.");
+
+    try {
+      const response = await fetch("http://localhost:8747/api/faculty/group", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          group_name: group,
+          faculty_id: facultative.id,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Помилка додавання групи: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setFacultyData((prevData) => ({
+        ...prevData,
+        [group]: [...(prevData[group] || []), ...(Array.isArray(data) ? data : [])],
+      }));
+
+      fetchFacultyData(group, facultative.id);
+    } catch (err) {
+      console.error("Помилка при додаванні групи:", err);
+      alert("Не вдалося додати групу. Спробуйте ще раз.");
+    }
   };
   
-
   const toggleModule = (groupName) => {
     setIsOpen((prevState) => ({
       ...prevState,
@@ -49,37 +49,35 @@ const FacultativeCard = ({ facultative }) => {
     }));
   };
 
-  const fetchFacultyData = (groupName, facultyId) => {
-    fetch(`http://localhost:8747/api/faculty/group?group_name=${groupName}&faculty_id=${facultyId}`)
-      .then((res) => {
-        if (!res.ok) {
-          console.error(`Ошибка запроса для ${groupName}, ${facultyId}: ${res.status}`);
-          return;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data) {
-          setFacultyData((prevData) => ({
-            ...prevData,
-            [groupName]: [...(prevData[groupName] || []), ...data],
-          }));
-        }
-      })
-      .catch((err) => {
-        console.error("Ошибка при запросе данных факультета:", err);
-      });
+  const fetchFacultyData = async (groupName, facultyId) => {
+    try {
+      const response = await fetch(`http://localhost:8747/api/faculty/group?group_name=${groupName}&faculty_id=${facultyId}`);
+      if (!response.ok) {
+        console.error(`Ошибка запроса для ${groupName}, ${facultyId}: ${response.status}`);
+        return;
+      }
+      const data = await response.json();
+      if (data) {
+        setFacultyData((prevData) => ({
+          ...prevData,
+          [groupName]: [...(prevData[groupName] || []), ...data],
+        }));
+      }
+    } catch (err) {
+      console.error("Ошибка при запросе данных факультета:", err);
+    }
   };
 
   useEffect(() => {
-    const fetchGroups = () => {
-      fetch("http://localhost:8747/api/students")
-        .then((res) => res.json())
-        .then((data) => {
-          const uniqueGroups = [...new Set(data.map((student) => student.student_group))];
-          setGroups(uniqueGroups);
-        })
-        .catch((err) => console.error(err));
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch("http://localhost:8747/api/students");
+        const data = await response.json();
+        const uniqueGroups = [...new Set(data.map((student) => student.student_group))];
+        setGroups(uniqueGroups);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchGroups();
@@ -97,12 +95,7 @@ const FacultativeCard = ({ facultative }) => {
     setSelectedGroup(group);
     setShowModal(false); 
     handleAddFacultativeGroup(group);
-
-    if (groups.length > 0) {
-      groups.forEach((group) => {
-        fetchFacultyData(group, facultative.id);
-      });
-    }
+    setSelectedGroup("");
   };
 
   const laborHours = facultative.labor_hours || 1;
@@ -128,6 +121,33 @@ const FacultativeCard = ({ facultative }) => {
       .catch((err) => console.error(err));
   };
 
+  const handleDeleteFacultativeGroup = (group) => {
+    fetch(`http://localhost:8747/api/faculty/group/${group}/${facultative.id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        group_name: group,
+        faculty_id: facultative.id,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Помилка видалення групи: ${res.status}`);
+        }
+        setFacultyData((prevData) => {
+          const newData = { ...prevData };
+          delete newData[group];
+          return newData;
+        });
+      })
+      .catch((err) => {
+        console.error("Помилка при видаленні групи:", err);
+        alert("Не вдалося видалити групу. Спробуйте ще раз.");
+      });
+  };  
+
   return (
     <div className="card-body">
       <div className="card mb-2">
@@ -143,12 +163,19 @@ const FacultativeCard = ({ facultative }) => {
             <div key={groupName} className="mb-2">
               <div className="card-header d-flex justify-content-between align-items-center bg-secondary text-white">
                 <span>{`Группа: ${groupName}`}</span>
-                <button
-                  className="btn btn-secondary bg-opacity-50 border-0 shadow-sm"
-                  onClick={() => toggleModule(groupName)}
-                >
-                  {isOpen[groupName] ? "▲" : "▼"}
-                </button>
+                <div className="btn-group">
+                  <button
+                    className="btn btn-secondary bg-opacity-50 border-0 shadow-sm"
+                    onClick={() => handleDeleteFacultativeGroup(groupName)}>
+                      Видалити
+                  </button>
+                  <button
+                    className="btn btn-secondary bg-opacity-50 border-0 shadow-sm"
+                    onClick={() => toggleModule(groupName)}
+                  >
+                    {isOpen[groupName] ? "▲" : "▼"}
+                  </button>
+                </div>
               </div>
 
               {isOpen[groupName] && (

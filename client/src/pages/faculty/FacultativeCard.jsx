@@ -19,10 +19,10 @@ const FacultativeCard = memo(({ facultative, deleteFaculty, fetchFaculty, }) => 
             {`${facultative.name} | ${facultative.department} | ${facultative.teacher_name} | ${facultative.form} | ${facultative.language} | ${facultative.hour} год. | ЛР: ${facultative.labor_hours}`}
           </span>
           <div className="btn-group">
-            <button className="btn btn-secondary bg-opacity-50 border-0" onClick={openEditModal}>Редагувати</button>
-            <button className="btn btn-secondary bg-opacity-50 border-0" onClick={handleDelete}>Видалити</button>
-            <button className="btn btn-secondary bg-opacity-50 border-0" onClick={toggleModule}>
-              {isOpen ? "∧" : "∨"}
+            <button className="btn btn-secondary bg-opacity-50 border-0 shadow-sm" onClick={openEditModal}>Редагувати</button>
+            <button className="btn btn-secondary bg-opacity-50 border-0 shadow-sm" onClick={handleDelete}>Видалити</button>
+            <button className="btn btn-secondary bg-opacity-50 border-0 shadow-sm" onClick={toggleModule}>
+              {isOpen ? "▲" : "▼"}
             </button>
           </div>
         </div>
