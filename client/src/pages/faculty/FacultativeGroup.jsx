@@ -6,6 +6,7 @@ const FacultativeCard = ({ facultative }) => {
   const [facultyData, setFacultyData] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("");
+  const [errors, setErrors] = useState({});
 
   const handleAddFacultativeGroup = async (group) => {
     if (!group) {
@@ -100,26 +101,46 @@ const FacultativeCard = ({ facultative }) => {
 
   const laborHours = facultative.labor_hours || 1;
 
-  const handleGradeChange = (studentId, labName, grade, groupName) => {
-    fetch(`http://localhost:8747/api/faculty/group/${studentId}/${labName}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        group_name: groupName,
-        faculty_id: facultative.id,
-        student_id: studentId,
-        lab_name: labName,
-        lab_score: grade,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data.message);
-      })
-      .catch((err) => console.error(err));
-  };
+  const handleGradeChange = async (studentId, labName, grade, groupName) => {
+    const numericGrade = Number(grade);
+    if (labName !== "completion_date" && (isNaN(numericGrade) || numericGrade < 0 || numericGrade > 100)) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [studentId]: { ...prevErrors[studentId], [labName]: "Оцінка повинна бути від 0 до 100" }
+      }));
+      return;
+    }
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [studentId]: { ...prevErrors[studentId], [labName]: "" }
+    }));
+
+    try {
+      const response = await fetch(`http://localhost:8747/api/faculty/group/${studentId}/${labName}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          group_name: groupName,
+          faculty_id: facultative.id,
+          student_id: studentId,
+          lab_name: labName,
+          lab_score: grade,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Помилка при оновленні оцінки: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log(data.message);
+    } catch (err) {
+      console.error("Помилка при оновленні оцінки:", err);
+    }
+  };  
 
   const handleDeleteFacultativeGroup = (group) => {
     fetch(`http://localhost:8747/api/faculty/group/${group}/${facultative.id}`, {
@@ -180,7 +201,7 @@ const FacultativeCard = ({ facultative }) => {
 
               {isOpen[groupName] && (
                 <div className="card-body p-2">
-                  <table className="table table-bordered table-hover table-sm table-striped" style={{ minWidth: "600px" }}>
+                  <table className="table table-bordered table-hover table-sm table-striped">
                     <thead className="table-dark">
                       <tr>
                         <th>ПІБ</th>
@@ -200,21 +221,30 @@ const FacultativeCard = ({ facultative }) => {
                               <td key={idx}>
                                 <input
                                   type="number"
+                                  className={`form-control form-control-sm ${errors[student.id]?.[`lr${idx + 1}`] ? 'is-invalid' : ''}`}
                                   defaultValue={student[`lr${idx + 1}`] || ""}
                                   onBlur={(e) => handleGradeChange(student.id, `lr${idx + 1}`, e.target.value, groupName)}
                                 />
+                                {errors[student.id]?.[`lr${idx + 1}`] && (
+                                  <div className="invalid-feedback">{errors[student.id][`lr${idx + 1}`]}</div>
+                                )}
                               </td>
                             ))}
                             <td>
                               <input
                                 type="number"
+                                className={`form-control form-control-sm ${errors[student.id]?.final_grade ? 'is-invalid' : ''}`}
                                 defaultValue={student.final_grade || ""}
                                 onBlur={(e) => handleGradeChange(student.id, "final_grade", e.target.value, groupName)}
                               />
+                              {errors[student.id]?.final_grade && (
+                                <div className="invalid-feedback">{errors[student.id].final_grade}</div>
+                              )}
                             </td>
                             <td>
                               <input
                                 type="date"
+                                className="form-control form-control-sm"
                                 defaultValue={student.completion_date || ""}
                                 onBlur={(e) => handleGradeChange(student.id, `completion_date`, e.target.value, groupName)}
                               />

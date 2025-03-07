@@ -13,6 +13,14 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
     labor_hours: "",
   });
 
+  const [errors, setErrors] = useState({
+    name: "",
+    department: "",
+    teacher_id: "",
+    hour: "",
+    labor_hours: "",
+  });
+
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
@@ -23,7 +31,7 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
         console.error("Помилка отримання викладачів:", error);
       }
     };
-  
+
     if (show) {
       fetchTeachers();
       if (initialData) {
@@ -54,8 +62,29 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name) newErrors.name = "Назва факультативу є обов'язковою";
+    if (!formData.department) newErrors.department = "Кафедра є обов'язковою";
+    if (!formData.teacher_id) newErrors.teacher_id = "Вибір викладача є обов'язковим";
+
+    if (isNaN(formData.hour) || formData.hour <= 0) {
+      newErrors.hour = "Кількість годин повинна бути числом більше за 0";
+    }
+
+    if (isNaN(formData.labor_hours) || formData.labor_hours < 0) {
+      newErrors.labor_hours = "Кількість лабораторних робіт повинна бути числом більше або рівним 0";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
       const method = initialData ? "PUT" : "POST";
       const url = initialData
@@ -72,7 +101,7 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
         throw new Error("Не вдалося зберегти факультатив");
       }
       onClose();
-      await fetchFaculty()    
+      await fetchFaculty();
     } catch (error) {
       console.error("Помилка збереження факультативу:", error);
     }
@@ -89,17 +118,37 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
         <Form onSubmit={handleSubmit}>
           <Form.Group controlId="name" className="mt-2">
             <Form.Label>Назва факультативу</Form.Label>
-            <Form.Control type="text" value={formData.name} onChange={handleChange} required />
+            <Form.Control
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              isInvalid={!!errors.name}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="department" className="mt-2">
             <Form.Label>Кафедра</Form.Label>
-            <Form.Control type="text" value={formData.department} onChange={handleChange} required />
+            <Form.Control
+              type="text"
+              value={formData.department}
+              onChange={handleChange}
+              isInvalid={!!errors.department}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.department}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="teacher_id" className="mt-2">
             <Form.Label>Викладач</Form.Label>
-            <Form.Control as="select" value={formData.teacher_id} onChange={handleChange} required>
+            <Form.Control
+              as="select"
+              value={formData.teacher_id}
+              onChange={handleChange}
+              isInvalid={!!errors.teacher_id}
+              required
+            >
               <option value="">Оберіть викладача</option>
               {teachers.length > 0 ? (
                 teachers.map((teacher) => (
@@ -111,6 +160,7 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
                 <option>Завантаження...</option>
               )}
             </Form.Control>
+            <Form.Control.Feedback type="invalid">{errors.teacher_id}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="language" className="mt-2">
@@ -132,12 +182,24 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
 
           <Form.Group controlId="hour" className="mt-2">
             <Form.Label>Кількість годин</Form.Label>
-            <Form.Control type="number" value={formData.hour} onChange={handleChange} />
+            <Form.Control
+              type="number"
+              value={formData.hour}
+              onChange={handleChange}
+              isInvalid={!!errors.hour}
+            />
+            <Form.Control.Feedback type="invalid">{errors.hour}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group controlId="labor_hours" className="mt-2">
             <Form.Label>Кількість лабораторних робіт</Form.Label>
-            <Form.Control type="number" value={formData.labor_hours} onChange={handleChange} />
+            <Form.Control
+              type="number"
+              value={formData.labor_hours}
+              onChange={handleChange}
+              isInvalid={!!errors.labor_hours}
+            />
+            <Form.Control.Feedback type="invalid">{errors.labor_hours}</Form.Control.Feedback>
           </Form.Group>
 
           <Button variant="primary" type="submit" className="mt-3">
