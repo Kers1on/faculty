@@ -7,8 +7,11 @@ import { getFaculty,
          getFacultativeGroup,
          updateFaculty,
          deleteFaculty } from "../controllers/FacultyController.js";
+import authenticateToken from "../middlewares/AuthMiddleware.js";
 
 const FacultyRoutes = express.Router();
+
+FacultyRoutes.use(authenticateToken);
 
 FacultyRoutes.get("/faculty", getFaculty);
 FacultyRoutes.post("/faculty", addFaculty);

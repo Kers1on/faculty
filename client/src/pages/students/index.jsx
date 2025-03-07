@@ -26,9 +26,11 @@ const Students = () => {
 
   const fetchStudents = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:8747/api/students", {
         method: "GET", 
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -79,9 +81,11 @@ const Students = () => {
       : "http://localhost:8747/api/students";
 
     try {
+      const token = localStorage.getItem("token");
       await fetch(url, {
         method: method,
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
@@ -100,9 +104,13 @@ const Students = () => {
 
   const handleDelete = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:8747/api/students/${deleteId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json" 
+        },
       });
       if (response.ok) {
         fetchStudents();
