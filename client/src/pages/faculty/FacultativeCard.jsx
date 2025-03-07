@@ -28,8 +28,9 @@ const FacultativeCard = memo(({ facultative, deleteFaculty, fetchFaculty, }) => 
         </div>
         {isOpen && (
           <div className="card-body">
-            <FacultativeGroup facultative={facultative}/>
+              <FacultativeGroup  facultative={facultative} />
           </div>
+
         )}
       </div>
 
