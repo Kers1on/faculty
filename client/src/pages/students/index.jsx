@@ -95,11 +95,6 @@ const Students = () => {
       errors.email = "Будь ласка, введіть коректну електронну пошту";
     }
 
-    const groupRegex = /^[0-9_]+$/;
-    if (student_group && !groupRegex.test(student_group)) {
-      errors.student_group = "Група може містити лише цифри та символ нижнього підкреслення (_)";
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };

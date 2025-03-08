@@ -13,6 +13,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -78,6 +79,8 @@ button:focus-visible {
 
 .content-area {
   margin-left: 100px; 
+  height: 100vh; 
+  overflow-y: auto;
 }
 
 .nav-pills {
