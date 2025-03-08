@@ -16,9 +16,11 @@ const FacultativesPage = () => {
 
   const fetchFaculty = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:8747/api/faculty", {
         method: "GET", 
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -31,9 +33,11 @@ const FacultativesPage = () => {
 
   const deleteFaculty = async (facultyId) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:8747/api/faculty/${facultyId}`, {
         method: "DELETE",
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ faculty_id: facultyId }),

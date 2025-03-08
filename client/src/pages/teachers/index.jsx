@@ -19,8 +19,14 @@ const Teachers = () => {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch("http://localhost:8747/api/teachers");
-      const data = await response.json();
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:8747/api/teachers", {
+        method: "GET", 
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });const data = await response.json();
       setTeachers(data);
     } catch (error) {
       console.error(error);
@@ -55,9 +61,10 @@ const Teachers = () => {
       : "http://localhost:8747/api/teachers";
 
     try {
+      const token = localStorage.getItem("token");
       await fetch(url, {
         method: method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       handleClose();
@@ -74,9 +81,10 @@ const Teachers = () => {
 
   const handleDelete = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:8747/api/teachers/${deleteId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
       });
       if (response.ok) {
         fetchTeachers();

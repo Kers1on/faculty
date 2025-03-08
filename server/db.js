@@ -22,20 +22,25 @@ db.serialize(() => {
 
   db.run(`CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    user_id INTEGER NOT NULL,
     name TEXT NOT NULL, 
     student_group TEXT NOT NULL,
     phone INTEGER NOT NULL,
     email TEXT NOT NULL,
-    department TEXT NOT NULL
+    department TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS teachers (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    name TEXT NOT NULL
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS faculty (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    user_id INTEGER NOT NULL,
     name TEXT NOT NULL, 
     department TEXT NOT NULL,
     teacher_id INTEGER NOT NULL,
@@ -43,6 +48,7 @@ db.serialize(() => {
     hour INTEGER NOT NULL,
     language TEXT NOT NULL,
     labor_hours INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
   )`);
 });

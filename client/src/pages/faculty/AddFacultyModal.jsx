@@ -24,7 +24,14 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const response = await fetch("http://localhost:8747/api/teachers");
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:8747/api/teachers", {
+          method: "GET", 
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setTeachers(data);
       } catch (error) {
@@ -86,6 +93,7 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
     if (!validateForm()) return;
 
     try {
+      const token = localStorage.getItem("token");
       const method = initialData ? "PUT" : "POST";
       const url = initialData
         ? `http://localhost:8747/api/faculty/${initialData.id}`
@@ -93,7 +101,7 @@ const AddFacultyModal = ({ show, onClose, fetchFaculty, initialData = null }) =>
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 

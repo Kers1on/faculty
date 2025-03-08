@@ -15,9 +15,11 @@ const FacultativeCard = ({ facultative }) => {
     }
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:8747/api/faculty/group", {
         method: "POST",
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -52,7 +54,14 @@ const FacultativeCard = ({ facultative }) => {
 
   const fetchFacultyData = async (groupName, facultyId) => {
     try {
-      const response = await fetch(`http://localhost:8747/api/faculty/group?group_name=${groupName}&faculty_id=${facultyId}`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:8747/api/faculty/group?group_name=${groupName}&faculty_id=${facultyId}`, {
+        method: "GET", 
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (!response.ok) {
         console.error(`Ошибка запроса для ${groupName}, ${facultyId}: ${response.status}`);
         return;
@@ -72,7 +81,14 @@ const FacultativeCard = ({ facultative }) => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch("http://localhost:8747/api/students");
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:8747/api/students", {
+          method: "GET", 
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         const uniqueGroups = [...new Set(data.map((student) => student.student_group))];
         setGroups(uniqueGroups);
@@ -117,9 +133,11 @@ const FacultativeCard = ({ facultative }) => {
     }));
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:8747/api/faculty/group/${studentId}/${labName}`, {
         method: "PUT",
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -143,9 +161,11 @@ const FacultativeCard = ({ facultative }) => {
   };  
 
   const handleDeleteFacultativeGroup = (group) => {
+    const token = localStorage.getItem("token");
     fetch(`http://localhost:8747/api/faculty/group/${group}/${facultative.id}`, {
       method: "DELETE",
       headers: {
+        "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

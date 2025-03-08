@@ -2,6 +2,7 @@ import db from "../db.js";
 
 // ========================================================== Faculty ==========================================================
 export const getFaculty = (req, res) => {
+  const user_id = req.user.id;
   const sql = `
     SELECT 
       faculty.id, 
@@ -14,9 +15,10 @@ export const getFaculty = (req, res) => {
       faculty.labor_hours
     FROM faculty
     LEFT JOIN teachers ON faculty.teacher_id = teachers.id
+    WHERE faculty.user_id = ?
   `;
 
-  db.all(sql, [], (err, rows) => {
+  db.all(sql, [user_id], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -26,13 +28,14 @@ export const getFaculty = (req, res) => {
 
 export const addFaculty = (req, res) => {
   const { name, department, teacher_id, form, hour, language, labor_hours } = req.body;
+  const user_id = req.user.id;
 
   if (!name || !department || !teacher_id || !form || !hour || !language || !labor_hours) {
     return res.status(400).json({ error: "Всі поля є обов’язковими" });
   }
 
-  const sql = `INSERT INTO faculty (name, department, teacher_id, form, hour, language, labor_hours) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  const values = [name, department, teacher_id, form, hour, language, labor_hours];
+  const sql = `INSERT INTO faculty (name, department, teacher_id, form, hour, language, labor_hours, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const values = [name, department, teacher_id, form, hour, language, labor_hours, user_id];
 
   db.run(sql, values, function (err) {
     if (err) {
@@ -43,51 +46,45 @@ export const addFaculty = (req, res) => {
 };
 
 export const updateFaculty = (req, res) => {
+  const { id } = req.params;
   const { name, department, teacher_id, form, hour, language, labor_hours } = req.body;
-  const faculty_id = req.params.id;
+  const user_id = req.user.id;
 
-  if (!faculty_id || !name || !department || !teacher_id || !form || !hour || !language || !labor_hours) {
-    return res.status(400).json({ error: "Всі поля є обов’язковими" });
-  }
+  const sql = `
+    UPDATE faculty
+    SET name = ?, department = ?, teacher_id = ?, form = ?, hour = ?, language = ?, labor_hours = ?
+    WHERE id = ? AND user_id = ?
+  `;
+  const values = [name, department, teacher_id, form, hour, language, labor_hours, id, user_id];
 
-  db.get("SELECT * FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+  db.run(sql, values, function (err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    if (!faculty) {
-      return res.status(404).json({ error: "Факультатив не знайдено" });
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Факультет з таким ID не знайдено або у вас немає доступу" });
     }
 
-    const updateQuery = `
-      UPDATE faculty
-      SET name = ?, department = ?, teacher_id = ?, form = ?, hour = ?, language = ?, labor_hours = ?
-      WHERE id = ?
-    `;
-    const values = [name, department, teacher_id, form, hour, language, labor_hours, faculty_id];
-
-    db.run(updateQuery, values, function (err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ message: `Факультатив з ID ${faculty_id} успішно оновлений` });
-    });
+    res.json({ message: `Факультет з ID ${id} успішно оновлений` });
   });
 };
 
 // ВИДАЛЯЮТЬСЯ УСІ ТАБЛИЦІ, ПОВʼЯЗАНІ З ЦИМ ФАКУЛЬТАТИВОМ
 export const deleteFaculty = (req, res) => {
   const { faculty_id } = req.body;
+  const user_id = req.user.id;
 
   if (!faculty_id) {
     return res.status(400).json({ error: "Необхідне поле faculty_id" });
   }
 
-  db.get("SELECT * FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+  db.get("SELECT * FROM faculty WHERE id = ? AND user_id = ?", [faculty_id, user_id], (err, faculty) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     if (!faculty) {
-      return res.status(404).json({ error: "Факультатив не знайдено" });
+      return res.status(404).json({ error: "Факультатив не знайдено або у вас немає доступу" });
     }
 
     const facultyName = faculty.name.replace(/\s+/g, "_");
@@ -109,8 +106,8 @@ export const deleteFaculty = (req, res) => {
         });
       });
 
-      const deleteQuery = "DELETE FROM faculty WHERE id = ?";
-      db.run(deleteQuery, [faculty_id], function (err) {
+      const deleteQuery = "DELETE FROM faculty WHERE id = ? AND user_id = ?";
+      db.run(deleteQuery, [faculty_id, user_id], function (err) {
         if (err) {
           return res.status(500).json({ error: err.message });
         }
@@ -124,17 +121,18 @@ export const deleteFaculty = (req, res) => {
 // ===================================================== Facultative group =====================================================
 export const getFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.query;
+  const user_id = req.user.id;
 
   if (!group_name || !faculty_id) {
     return res.status(400).json({ error: "Необхідні дані відсутні" });
   }
 
   db.get(
-    "SELECT name, labor_hours FROM faculty WHERE id = ?",
-    [faculty_id],
+    "SELECT name, labor_hours FROM faculty WHERE id = ? AND user_id = ?",
+    [faculty_id, user_id],
     (err, faculty) => {
       if (err || !faculty) {
-        return res.status(404).json({ error: "Факультатив не знайдено" });
+        return res.status(404).json({ error: "Факультатив не знайдено або у вас немає доступу" });
       }
 
       const facultyName = faculty.name.replace(/\s+/g, "_");
@@ -154,10 +152,10 @@ export const getFacultativeGroup = (req, res) => {
         SELECT s.id, s.name, ${labColumns}, f.final_grade, f.completion_date, s.student_group
         FROM students s
         LEFT JOIN ${tableName} f ON s.id = f.student_id
-        WHERE s.student_group = ?
+        WHERE s.student_group = ? AND s.user_id = ?
       `;
 
-      db.all(selectQuery, [group_name], (err, rows) => {
+      db.all(selectQuery, [group_name, user_id], (err, rows) => {
         if (err) {
           return res.status(500).json({ error: err.message });
         }
@@ -175,17 +173,18 @@ export const getFacultativeGroup = (req, res) => {
 
 export const createFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.body;
+  const user_id = req.user.id;
 
   if (!group_name || !faculty_id) {
     return res.status(400).json({ error: "Необхідні дані відсутні" });
   }
 
-  db.get("SELECT name, labor_hours FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+  db.get("SELECT name, labor_hours FROM faculty WHERE id = ? AND user_id = ?", [faculty_id, user_id], (err, faculty) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     if (!faculty) {
-      return res.status(404).json({ error: "Факультатив не знайдено" });
+      return res.status(404).json({ error: "Факультатив не знайдено або у вас немає доступу" });
     }
 
     const facultyName = faculty.name.replace(/\s+/g, "_");
@@ -202,11 +201,13 @@ export const createFacultativeGroup = (req, res) => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id INTEGER NOT NULL,
         faculty_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         ${labColumns}
         final_grade TEXT DEFAULT NULL,
         completion_date TEXT DEFAULT NULL,
         FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-        FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE CASCADE
+        FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `;
 
@@ -215,7 +216,7 @@ export const createFacultativeGroup = (req, res) => {
         return res.status(500).json({ error: err.message });
       }
 
-      db.all("SELECT id FROM students WHERE student_group = ?", [group_name], (err, students) => {
+      db.all("SELECT id FROM students WHERE student_group = ? AND user_id = ?", [group_name, user_id], (err, students) => {
         if (err) {
           return res.status(500).json({ error: err.message });
         }
@@ -230,12 +231,12 @@ export const createFacultativeGroup = (req, res) => {
 
           const existingStudentIds = existingRecords.map((record) => record.student_id);
 
-          const insertQuery = `INSERT INTO ${tableName} (student_id, faculty_id) VALUES (?, ?)`;
+          const insertQuery = `INSERT INTO ${tableName} (student_id, faculty_id, user_id) VALUES (?, ?, ?)`;
           const stmt = db.prepare(insertQuery);
 
           students.forEach(({ id }) => {
             if (!existingStudentIds.includes(id)) {
-              stmt.run(id, faculty_id);
+              stmt.run(id, faculty_id, user_id);
             }
           });
 
@@ -251,14 +252,15 @@ export const createFacultativeGroup = (req, res) => {
 // Оновлення оцінки в окремій комірці (Excel-type)
 export const updateLabResult = (req, res) => {
   const { group_name, faculty_id, student_id, lab_name, lab_score } = req.body;
+  const user_id = req.user.id;
 
   if (!group_name || !faculty_id || !student_id || !lab_name) {
     return res.status(400).json({ error: "Обов’язкові поля відсутні" });
   }
 
-  db.get("SELECT name FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
-    if (err || !faculty) {
-      return res.status(404).json({ error: "Факультатив не знайдено" });
+  db.get("SELECT name, user_id FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err || !faculty || faculty.user_id !== user_id) {
+      return res.status(404).json({ error: "Факультатив не знайдено або у вас немає доступу" });
     }
 
     const facultyName = faculty.name.replace(/\s+/g, "_");
@@ -277,14 +279,15 @@ export const updateLabResult = (req, res) => {
 
 export const deleteFacultativeGroup = (req, res) => {
   const { group_name, faculty_id } = req.body;
+  const user_id = req.user.id;
 
   if (!group_name || !faculty_id) {
     return res.status(400).json({ error: "Необхідні дані відсутні" });
   }
 
-  db.get("SELECT name FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
-    if (err || !faculty) {
-      return res.status(404).json({ error: "Факультатив не знайдено" });
+  db.get("SELECT name, user_id FROM faculty WHERE id = ?", [faculty_id], (err, faculty) => {
+    if (err || !faculty || faculty.user_id !== user_id) {
+      return res.status(404).json({ error: "Факультатив не знайдено або у вас немає доступу" });
     }
 
     const facultyName = faculty.name.replace(/\s+/g, "_");

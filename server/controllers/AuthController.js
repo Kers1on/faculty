@@ -20,7 +20,11 @@ export const register = (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     db.run("INSERT INTO users (name, password) VALUES (?, ?)", [name, hashedPassword], function (err) {
       if (err) return res.status(500).json({ message: "Помилка реєстрації" });
-      res.status(201).json({ message: "Користувач зареєстрований" });
+
+      const userId = this.lastID;
+      const token = jwt.sign({ id: userId, name }, "CRU4289RUN28JYC2djsaklfh)DISA(278432YJ5762", { expiresIn: "7d" });
+
+      res.status(201).json({ message: "Користувач зареєстрований", token, user_id: userId });
     });
   });
 };
@@ -39,6 +43,7 @@ export const login = (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Невірні дані" });
 
     const token = jwt.sign({ id: user.id, name: user.name }, "CRU4289RUN28JYC2djsaklfh)DISA(278432YJ5762", { expiresIn: "7d" });
-    res.json({ token });
+    
+    res.json({ token, user_id: user.id });
   });
 };
