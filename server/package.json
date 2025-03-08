@@ -2,6 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build:client": "cd ../client && npm run build",
     "start:server": "node index.js --watch",
@@ -13,6 +14,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "path": "^0.12.7",
     "sqlite3": "^5.1.7"
   }
